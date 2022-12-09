@@ -75,6 +75,11 @@ public class UserRepository : IUserRepository
         return userToken.Entity.Id;
     }
 
+    public async Task<bool> UserIsExist(string userName)
+    {
+        return await _context.Users.AnyAsync(c => c.UserName == userName);
+    }
+
     public async Task<bool> DeleteToken(UserToken token)
     {
         token.IsDelete = true;

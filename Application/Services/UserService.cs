@@ -94,6 +94,16 @@ public class UserService : IUserServices
         return OperationResult<UserViewModel>.Success(userVM);
     }
 
+    public async Task<OperationResult<bool>> UserIsExist(string userName)
+    {
+        var res =await _userRepository.UserIsExist(userName);
+        if (!res)
+        {
+            return OperationResult<bool>.Error("کاربری یافت نشد");
+        }
+        return OperationResult<bool>.Success(res);
+    }
+
 
     public async Task<OperationResult<bool>> DeleteUser(int id)
     {
