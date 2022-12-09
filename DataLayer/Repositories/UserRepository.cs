@@ -58,6 +58,47 @@ public class UserRepository : IUserRepository
         return true;
     }
 
+    public Task<User?> GetUserByUserName(string userName)
+    {
+        return _context.Users.FirstOrDefaultAsync(c => c.UserName == userName);
+    }
+
+    public async Task<bool> LoginUser(string userName, string password)
+    {
+       return await _context.Users.AnyAsync(c => c.UserName == userName && c.Password == password);
+    }
+
+    public async Task<int?> AddToken(UserToken token)
+    {
+        var userToken = await _context.UserTokens.AddAsync(token);
+        Save();
+        return userToken.Entity.Id;
+    }
+
+    public async Task<bool> DeleteToken(UserToken token)
+    {
+        token.IsDelete = true;
+        _context.UserTokens.Update(token);
+        Save();
+        return true;
+    }
+
+    public Task<UserToken?> GetTokenByToken(string token)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<UserToken?> GetTokenById(int tokenId)
+    {
+        return await _context.UserTokens.FindAsync(tokenId);
+    }
+
+    public Task<UserToken?> GetTokenByRefreshToken(string refreshToken)
+    {
+        throw new NotImplementedException();
+    }
+
+
     public void Save()
     {
         _context.SaveChanges();

@@ -1,5 +1,11 @@
+using System.Text;
 using DataLayer.DBContext;
+using IoC;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,9 +14,54 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(option =>
+{
+    var jwtSecurityScheme = new OpenApiSecurityScheme
+    {
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Name = "JWT Authentication",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Description = "Enter Token",
 
-  #region ConnectionString
+        Reference = new OpenApiReference
+        {
+            Id = JwtBearerDefaults.AuthenticationScheme,
+            Type = ReferenceType.SecurityScheme
+        }
+    };
+    option.AddSecurityDefinition(jwtSecurityScheme.Reference.Id, jwtSecurityScheme);
+
+    option.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        { jwtSecurityScheme, Array.Empty<string>() }
+    });
+});
+
+builder.Services.AddAuthentication(option =>
+{
+    option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    option.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
+    option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(option =>
+{
+    option.TokenValidationParameters = new TokenValidationParameters()
+    {
+        IssuerSigningKey =
+             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWTBearer:signingKey"])),
+        ValidIssuer = builder.Configuration["JWTBearer:Issuer"],
+        ValidAudience = builder.Configuration["JWTBearer:Audience"],
+        ValidateLifetime = true,
+        ValidateIssuer = true,
+        ValidateIssuerSigningKey = true,
+        ValidateAudience = true
+    };
+    option.SaveToken = true;
+
+
+});
+#region ConnectionString
 
 
 builder.Services.AddDbContext<StormTestContext>(options =>
@@ -19,6 +70,7 @@ builder.Services.AddDbContext<StormTestContext>(options =>
 });
 
 #endregion
+Dependency.ManageDependencyInjection(builder.Services);
 
 var app = builder.Build();
 
@@ -30,7 +82,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

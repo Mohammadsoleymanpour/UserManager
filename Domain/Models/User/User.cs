@@ -24,10 +24,16 @@ namespace Domain.Models.User
         public string UserName { get; set; }
         [Display(Name = "رمز عبور")]
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-        [MaxLength(10, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد .")]
+        [MaxLength(100, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد .")]
         [MinLength(4, ErrorMessage = "{0} نمی تواند کمتر از {1} کاراکتر باشد .")]
         [DataType(dataType:DataType.Password)]
         public string Password { get; set; }
 
+
+        #region Relations
+
+        public List<UserToken> UserTokens { get; set; }
+
+        #endregion
     }
 }

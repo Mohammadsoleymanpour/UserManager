@@ -18,12 +18,16 @@ namespace DataLayer.DBContext
         #region DbSets
 
         public DbSet<User> Users { get; set; }
+        public DbSet<UserToken> UserTokens { get; set; }
 
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>()
+                .HasQueryFilter(u => !u.IsDelete);
+
+            modelBuilder.Entity<UserToken>()
                 .HasQueryFilter(u => !u.IsDelete);
         }
 
